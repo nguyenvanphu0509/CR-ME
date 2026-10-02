@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 
+- Dark color scheme.
+- Custom scrollbar.
+- Glassmorphism helper.
+- Glow effect.
+- Gradient text. */
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+  
+  body {
+    background-color: var(--brand-background);
+    color: var(--brand-text-primary);
+  }
+}
+
+/* Custom smooth scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--brand-background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--brand-scrollbar-thumb);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-scrollbar-thumb-hover);
+}
+
+/* Glassmorphism helpers */
+.glass-panel {
+  background: var(--brand-glass-panel);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--brand-border);
+}
+
+.glass-nav {
+  background: var(--brand-glass-nav);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--brand-glass-nav-border);
+}
+
+/* Glow effects */
+.radial-glow {
+  background: radial-gradient(circle at center, var(--brand-glow) 0%, var(--brand-glow-end) 70%);
+}
+
+.text-gradient-cream {
+  background: linear-gradient(135deg, var(--brand-white) 0%, var(--brand-foreground) 60%, var(--brand-primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
