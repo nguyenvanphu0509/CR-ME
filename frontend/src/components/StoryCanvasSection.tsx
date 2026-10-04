@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { ChevronDown, ArrowRight, Sparkle } from 'lucide-react';
 import { FrameSequenceManager } from '@/utils/frameLoader';
 import { BRAND_CONFIG } from '@/config/brand';
@@ -18,6 +18,22 @@ interface StoryCanvasSectionProps {
   onExploreClick: () => void;
 }
 
+const reducedMotionQuery = '(prefers-reduced-motion: reduce)';
+
+function subscribeToReducedMotion(onChange: () => void) {
+  const mediaQuery = window.matchMedia(reducedMotionQuery);
+  mediaQuery.addEventListener('change', onChange);
+  return () => mediaQuery.removeEventListener('change', onChange);
+}
+
+function getReducedMotionSnapshot() {
+  return window.matchMedia(reducedMotionQuery).matches;
+}
+
+function getServerReducedMotionSnapshot() {
+  return false;
+}
+
 export const StoryCanvasSection: React.FC<StoryCanvasSectionProps> = ({
   frameManager,
   isReady,
@@ -27,24 +43,24 @@ export const StoryCanvasSection: React.FC<StoryCanvasSectionProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [currentFrame, setCurrentFrame] = useState(1);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-
-  // Check reduced motion preference
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setPrefersReducedMotion(mediaQuery.matches);
-    const handleChange = () => setPrefersReducedMotion(mediaQuery.matches);
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
+  const prefersReducedMotion = useSyncExternalStore(
+    subscribeToReducedMotion,
+    getReducedMotionSnapshot,
+    getServerReducedMotionSnapshot,
+  );
+  const currentFrame = prefersReducedMotion
+    ? 277
+    : Math.min(
+        Math.max(Math.floor(scrollProgress * (BRAND_CONFIG.sequenceTotalFrames - 1)) + 1, 1),
+        BRAND_CONFIG.sequenceTotalFrames,
+      );
 
   // Handle Canvas sizing and Frame Rendering
   useEffect(() => {
     if (!isReady || !canvasRef.current) return;
 
     const canvas = canvasRef.current;
-    
+
     // Initial Render
     frameManager.renderFrameToCanvas(canvas, currentFrame);
 
@@ -58,11 +74,7 @@ export const StoryCanvasSection: React.FC<StoryCanvasSectionProps> = ({
 
   // Handle Scroll Progress Mapping
   useEffect(() => {
-    if (prefersReducedMotion) {
-      // Static frame for reduced motion
-      setCurrentFrame(277);
-      return;
-    }
+    if (prefersReducedMotion) return;
 
     const handleScroll = () => {
       if (!containerRef.current || !canvasRef.current) return;
@@ -76,46 +88,18 @@ export const StoryCanvasSection: React.FC<StoryCanvasSectionProps> = ({
       // Calculate progress between 0.0 and 1.0
       const currentScroll = -rect.top;
       const progress = Math.min(Math.max(currentScroll / totalScrollable, 0), 1);
-      
+
       setScrollProgress(progress);
-
-      // Map progress 0..1 to the configured frame range
-      const frameIndex = Math.min(
-        Math.max(Math.floor(progress * (BRAND_CONFIG.sequenceTotalFrames - 1)) + 1, 1),
-        BRAND_CONFIG.sequenceTotalFrames
-      );
-
-      setCurrentFrame(frameIndex);
-      frameManager.renderFrameToCanvas(canvasRef.current, frameIndex);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll(); // Trigger initial scroll check
+    const initialScrollCheck = window.requestAnimationFrame(handleScroll);
 
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [isReady, frameManager, prefersReducedMotion]);
-
-  // Phase Visibility Helper
-  const getPhaseOpacity = (start: number, end: number) => {
-    if (prefersReducedMotion) {
-      return start >= 0.88 ? 'opacity-100' : 'opacity-0 hidden';
-    }
-    const fadeDistance = 0.04;
-    if (scrollProgress >= start && scrollProgress <= end) {
-      if (scrollProgress < start + fadeDistance) {
-        // Fade in
-        const ratio = (scrollProgress - start) / fadeDistance;
-        return `opacity-${Math.round(ratio * 100)}`;
-      }
-      if (scrollProgress > end - fadeDistance) {
-        // Fade out
-        const ratio = (end - scrollProgress) / fadeDistance;
-        return `opacity-${Math.round(ratio * 100)}`;
-      }
-      return 'opacity-100 pointer-events-auto';
-    }
-    return 'opacity-0 pointer-events-none';
-  };
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.cancelAnimationFrame(initialScrollCheck);
+    };
+  }, [isReady, prefersReducedMotion]);
 
   return (
     <div

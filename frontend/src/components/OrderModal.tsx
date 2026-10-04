@@ -15,7 +15,7 @@ export const OrderModal: React.FC<OrderModalProps> = ({
   initialToppings,
   onClose,
 }) => {
-  const [selectedFlavor, setSelectedFlavor] = useState<ProductFlavor>(
+  const [selectedFlavor] = useState<ProductFlavor>(
     initialFlavor || FLAVOR_LIST[0]
   );
   const [selectedStore, setSelectedStore] = useState(STORE_LOCATIONS[0].id);
