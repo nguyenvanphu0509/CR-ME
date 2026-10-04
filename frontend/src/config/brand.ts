@@ -8,6 +8,7 @@ export interface ProductFlavor {
   primaryColor: string;
   accentColor: string;
   ingredients: string[];
+  allergens: string[];
   textureNotes: string[];
   pairing: string;
 }
@@ -78,6 +79,7 @@ export const FLAVOR_LIST: ProductFlavor[] = [
     primaryColor: brand.foreground,
     accentColor: brand.primary,
     ingredients: ["Fresh Organic Milk", "Tahitian Vanilla Pods", "Pure Cane Sugar", "Hand-Bunked Cream"],
+    allergens: ["Milk"],
     textureNotes: ["Silky Smooth", "Velvety Melts", "Golden Crisp Finish"],
     pairing: "Pairs exquisitely with warm caramel waffle pieces."
   },
@@ -91,6 +93,7 @@ export const FLAVOR_LIST: ProductFlavor[] = [
     primaryColor: brand.chocolate,
     accentColor: brand.primary,
     ingredients: ["70% Single-Origin Cacao", "Artisanal Honeycomb", "Grass-Fed Milk", "Cocoa Butter"],
+    allergens: ["Milk"],
     textureNotes: ["Dense Cocoa", "Satisfying Honeycomb Crunch", "Silky Aftertaste"],
     pairing: "Best paired with crushed roasted hazelnuts."
   },
@@ -104,6 +107,7 @@ export const FLAVOR_LIST: ProductFlavor[] = [
     primaryColor: brand.accent,
     accentColor: brand.foreground,
     ingredients: ["Wild Alpine Raspberries", "Sweet Cream", "White Chocolate Ribbons", "Fresh Lemon Zest"],
+    allergens: ["Milk"],
     textureNotes: ["Bright Tartness", "Smooth Swirl", "Melts Gently"],
     pairing: "Perfect with fresh berry reduction."
   },
@@ -117,10 +121,30 @@ export const FLAVOR_LIST: ProductFlavor[] = [
     primaryColor: brand.pistachio,
     accentColor: brand.chocolate,
     ingredients: ["Sicilian Pistachio Paste", "First-Harvest Matcha", "Almond Milk Base", "Toasted Pistachio Bits"],
+    allergens: ["Almond", "Pistachio"],
     textureNotes: ["Creamy Nuttiness", "Subtle Tea Fragrance", "Smooth Velvet"],
     pairing: "Pairs deliciously with matcha biscuit crumble."
   }
 ];
+
+export const FLAVOR_PRESENTATION: Record<string, Pick<ProductFlavor, 'primaryColor' | 'accentColor'>> = {
+  'vanilla-gold': {
+    primaryColor: brand.foreground,
+    accentColor: brand.primary,
+  },
+  'dark-chocolate-crunch': {
+    primaryColor: brand.chocolate,
+    accentColor: brand.primary,
+  },
+  'wild-raspberry-ribbon': {
+    primaryColor: brand.accent,
+    accentColor: brand.foreground,
+  },
+  'pistachio-matcha': {
+    primaryColor: brand.pistachio,
+    accentColor: brand.chocolate,
+  },
+};
 
 export const TOPPINGS_LIST: ToppingOption[] = [
   {

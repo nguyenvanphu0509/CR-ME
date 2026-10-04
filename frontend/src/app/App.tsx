@@ -4,11 +4,11 @@ import { FrameSequenceManager } from '@/utils/frameLoader';
 import { Preloader } from '@/components/Preloader';
 import { Navbar } from '@/components/Navbar';
 import { StoryCanvasSection } from '@/components/StoryCanvasSection';
-import { FlavorShowcase } from '@/components/FlavorShowcase';
+import { FlavorShowcase } from '@/features/catalog/FlavorShowcase';
 import { OurStory } from '@/components/OurStory';
-import { ToppingBuilder } from '@/components/ToppingBuilder';
-import { StoreLocator } from '@/components/StoreLocator';
-import { OrderModal } from '@/components/OrderModal';
+import { ToppingBuilder } from '@/features/custom-builder/ToppingBuilder';
+import { StoreLocator } from '@/features/stores/StoreLocator';
+import { OrderModal } from '@/features/checkout/OrderModal';
 import { Footer } from '@/components/Footer';
 import { BRAND_CONFIG, ProductFlavor, ToppingOption } from '@/config/brand';
 
@@ -118,6 +118,7 @@ export const App: React.FC = () => {
 
       {/* Pickup Order Modal */}
       <OrderModal
+        key={`${isOrderModalOpen}-${orderFlavor?.id ?? 'default'}`}
         isOpen={isOrderModalOpen}
         initialFlavor={orderFlavor}
         initialToppings={orderToppings}

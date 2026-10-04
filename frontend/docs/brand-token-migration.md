@@ -91,16 +91,16 @@ border-brand-white/10
 
 ### Component giao dien
 
-- `src/App.tsx`
+- `src/app/App.tsx`
 - `src/components/Navbar.tsx`
 - `src/components/Preloader.tsx`
 - `src/components/StoryCanvasSection.tsx`
-- `src/components/FlavorShowcase.tsx`
-- `src/components/FlavorModal.tsx`
+- `src/features/catalog/FlavorShowcase.tsx`
+- `src/features/catalog/components/FlavorModal.tsx`
 - `src/components/OurStory.tsx`
-- `src/components/ToppingBuilder.tsx`
-- `src/components/StoreLocator.tsx`
-- `src/components/OrderModal.tsx`
+- `src/features/custom-builder/ToppingBuilder.tsx`
+- `src/features/stores/StoreLocator.tsx`
+- `src/features/checkout/OrderModal.tsx`
 - `src/components/Footer.tsx`
 - `src/utils/frameLoader.ts`
 

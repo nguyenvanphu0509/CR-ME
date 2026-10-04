@@ -1,8 +1,8 @@
 # Explain project detail.
-## main stack 
+## main stack
 - React 19 + TypeScript + Vite + Tailwind CSS + Lenis.
 **Lenis is a JavaScript library for creating smooth scrolling on websites.**
-## structure 
+## structure
 self/
 ├── index.html
 ├── package.json
@@ -20,21 +20,28 @@ self/
 │
 ├── src/
 │   ├── main.tsx
-│   ├── App.tsx
 │   ├── index.css
 │   │
 │   ├── components/
 │   │   ├── Navbar.tsx
 │   │   ├── Preloader.tsx
 │   │   ├── StoryCanvasSection.tsx
-│   │   ├── FlavorShowcase.tsx
-│   │   ├── FlavorModal.tsx
 │   │   ├── OurStory.tsx
-│   │   ├── ToppingBuilder.tsx
-│   │   ├── StoreLocator.tsx
-│   │   ├── OrderModal.tsx
 │   │   └── Footer.tsx
 │   │
+│   ├── app/
+│   │   └── App.tsx
+│   ├── api/
+│   │   └── client.ts
+│   ├── features/
+│   │   ├── catalog/
+│   │   │   ├── api/
+│   │   │   ├── components/FlavorModal.tsx
+│   │   │   ├── FlavorShowcase.tsx
+│   │   │   └── types.ts
+│   │   ├── checkout/OrderModal.tsx
+│   │   ├── custom-builder/ToppingBuilder.tsx
+│   │   └── stores/StoreLocator.tsx
 │   ├── config/
 │   │   └── brand.ts
 │   ├── types/
@@ -48,7 +55,7 @@ self/
 │
 ├── node_modules/
 └── dist/
-## package.json 
+## package.json
 | Lệnh | Mục đích |
 |---|---|
 | `npm run dev` | Khởi động Vite development server, mặc định project đặt port `3000` |
@@ -67,7 +74,7 @@ npm run build
 → Vite build lại
 → tạo production version trong dist/
 
-## dependency 
+## dependency
 - There are library required for the application's functionality during coding.
 | Package | Vai trò |
 |---|---|
@@ -83,7 +90,7 @@ npm run build
 gsap, clsx, tailwind-merge đã được cài nhưng chưa được import ở đâu.
 Story animation hiện dùng sự kiện scroll thủ công, không dùng GSAP.
 
-## devDependencies 
+## devDependencies
 For development/build purposes only:
 | Package | Vai trò |
 |---|---|
@@ -98,7 +105,7 @@ For development/build purposes only:
 | `@types/node` | Type definition cho API Node.js trong config/build code |
 
 meaning of ^ in version :
-``` json 
+``` json
 "react": "^19.0.0"
 ```
 - the sign ^ allows npm to install compatible versions in major version 19, such as 19.3.0, but not automatically jump to React 20
@@ -125,7 +132,7 @@ Allows:
 ```ts
 import Navbar from '@/components/Navbar';
 ```
-instead of 
+instead of
 ```ts
 import Navbar from '../../../components/Navbar';
 ```
@@ -143,13 +150,13 @@ open: false means do not automatically open the browser.
 - root is the main container for the React app
      React says:
     "Find the HTML element whose id is root."
-     "React, use this div as the place to render my React application." 
-     
+     "React, use this div as the place to render my React application."
+
 - Normally, HTML uses <script> to load JavaScript:
     Load and execute the JavaScript module located at /src/main.tsx
 
-## file src/main.tsx 
-```ts 
+## file src/main.tsx
+```ts
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
@@ -168,7 +175,7 @@ useState = "I need to store and change data in my component."
 useEffect → performs side effects (Use it when you need to interact with something outside React's rendering process.)
 useRef = A place for React to retain a value between renders, without changing that value without causing the component to re-render.
 useRef can be used to hold a reference to a DOM object. useRef keeps the reference → so you can later get that exact DOM element and directly manipulate it. example like : đưa cursor vào input, giả lập click vào element, scroll màn hình tới element đó.
-``` ts 
+``` ts
 useEffect(() => {
   ...
 }, [])
@@ -177,9 +184,9 @@ The [] in useEffect is called the dependency array, towards this case, react nom
 Mount = The result of the initial render is inserted into the DOM.
 Render = React calls the component to determine what the UI should look like.
 A component can render many times, but in a specific lifecycle only mount once.
-you must distinguish three type of [] in useEffect, 
-Multiple dependencies 
-``` ts 
+you must distinguish three type of [] in useEffect,
+Multiple dependencies
+``` ts
 useEffect(() => {
   console.log("something changed")
 }, [count, name])
@@ -188,7 +195,7 @@ Now the effect runs when either count or name changes.
 
 
 ## file src.App.tsx component điều phối trung tâm
-```ts 
+```ts
 const [loadProgress, setLoadProgress] = useState(0);
 const [isReady, setIsReady] = useState(false);
 const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
@@ -201,24 +208,24 @@ state is data that changing and making react reander again ui.
 **Props and callbacks**
 The app passes data down to the child component using props:
 Props = dữ liệu mà component cha truyền xuống component con.
-callbacks = 
+callbacks =
 
-## role of components 
+## role of components
 | Component | Vai trò |
 |---|---|
 | `Preloader.tsx` | Hiển thị phần trăm tải frame, biến mất khi đạt ngưỡng sẵn sàng |
 | `Navbar.tsx` | Navigation desktop/mobile, đổi nền khi cuộn, mở order modal |
 | `StoryCanvasSection.tsx` | Trải nghiệm scroll animation chính, component này điều khiển việc chọn frame theo vị trí cuộn và hiển thị frame đó trên Canvas. |
-| `FlavorShowcase.tsx` | Hiển thị và lọc danh sách hương vị |
-| `FlavorModal.tsx` | Hiển thị chi tiết nguyên liệu và texture của một hương vị |
+| `features/catalog/FlavorShowcase.tsx` | Hiển thị và lọc danh sách hương vị lấy từ API |
+| `features/catalog/components/FlavorModal.tsx` | Hiển thị chi tiết nguyên liệu và texture của một hương vị |
 | `OurStory.tsx` | Nội dung thương hiệu và quy trình làm sản phẩm |
-| `ToppingBuilder.tsx` | Chọn base flavor và tối đa 4 topping |
-| `StoreLocator.tsx` | Hiển thị các cửa hàng từ dữ liệu tĩnh |
-| `OrderModal.tsx` | Form đặt hàng mô phỏng và sinh mã order |
+| `features/custom-builder/ToppingBuilder.tsx` | Chọn base flavor và tối đa 4 topping |
+| `features/stores/StoreLocator.tsx` | Hiển thị các cửa hàng từ dữ liệu tĩnh |
+| `features/checkout/OrderModal.tsx` | Form đặt hàng mô phỏng và sinh mã order |
 | `Footer.tsx` | Link điều hướng, thương hiệu và social icon |
 
 ## tsconfig.json
-this file configues typescript 
+this file configues typescript
 | Tùy chọn | Ý nghĩa trong project |
 |---|---|
 | `target: "ES2022"` | Mã JavaScript được hướng tới môi trường hỗ trợ cú pháp ES2022. Vite xử lý quá trình build thực tế, nên đây không phải toàn bộ cấu hình tương thích trình duyệt. |
@@ -242,7 +249,7 @@ src/index.css + className trong TSX
   → Autoprefixer xử lý prefix
   → Vite đưa CSS đã xử lý vào bản build
 ## tailwind.config.js
-taiwind quét những file này để tìm class được sử dụng, chẳng hạn: 
+taiwind quét những file này để tìm class được sử dụng, chẳng hạn:
 ```ts
 className="bg-[#050505] text-[#FFF4DE] rounded-3xl"
 ```
@@ -261,3 +268,37 @@ plugins: [] nghĩa là chưa cài thêm plugin Tailwind nào.
 JPA = bộ quy tắc/API giúp Java làm việc với database theo kiểu Object.
 Hibernate = một thư viện/framework hiện thực các quy tắc của JPA.
 JPA/Hibernate xử lý chuyện:"Backend lấy/lưu dữ liệu đó vào database như thế nào?"
+
+## hook
+Hook = hook into a React feature
+some hook you will meet:
+| Hook | Dùng để |
+|---|---|
+| `useState()` | Quản lý state |
+| `useEffect()` | Chạy side effect |
+| `useContext()` | Lấy data từ Context |
+| `useRef()` | Giữ một giá trị/reference không gây re-render |
+| `useMemo()` | Cache kết quả tính toán |
+| `useCallback()` | Cache function |
+| `useReducer()` | Quản lý state phức tạp |
+
+## component
+A portion of the user interface (UI) encapsulated as a standalone unit, typically written as a function.
+ex: Header, ProductList, ProductCard is a component
+##
+npm run lint
+Purpose: Find problems in your source code without building/running the application.
+lint = "Is my code clean and following the project's rules?
+npm run build
+Purpose: Try to create the production version of your application.
+##
+| Command | Shows |
+|---|---|
+| `git diff -- file` | Unstaged changes |
+| `git diff --staged -- file` | Staged changes |
+| `git diff HEAD -- file` | **All changes since latest commit** (staged + unstaged) |
+File patch là một file text chứa thông tin về những dòng code đã thay đổi giữa hai phiên bản.
+
+git apply        → áp dụng một patch
+--cached         → chỉ áp dụng vào staging area
+/private/tmp/... → đường dẫn tới file patch

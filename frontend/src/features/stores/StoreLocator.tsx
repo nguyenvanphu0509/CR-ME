@@ -1,8 +1,26 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { MapPin, Clock, Phone, Navigation } from 'lucide-react';
 import { STORE_LOCATIONS } from '@/config/brand';
+import { ApiStore, getStores } from '@/features/catalog/api/catalog';
 
 export const StoreLocator: React.FC = () => {
+  const [stores, setStores] = useState<ApiStore[] | null>(null);
+
+  useEffect(() => {
+    getStores().then(setStores).catch(() => setStores(null));
+  }, []);
+
+  const locations = stores ?? STORE_LOCATIONS.map((store) => ({
+    id: store.id,
+    name: store.name,
+    address: store.address,
+    phone: store.phone,
+    latitude: null,
+    longitude: null,
+    openingHours: { daily: store.hours },
+    active: store.status === 'Open Now',
+  }));
+
   return (
     <section id="stores-section" className="relative py-28 bg-brand-background text-brand-foreground overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
@@ -19,7 +37,7 @@ export const StoreLocator: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {STORE_LOCATIONS.map((store) => (
+          {locations.map((store) => (
             <div
               key={store.id}
               className="bg-brand-surface p-8 rounded-3xl border border-brand-white/5 hover:border-brand-white/20 transition-all duration-300 flex flex-col justify-between"
@@ -28,7 +46,7 @@ export const StoreLocator: React.FC = () => {
                 <div className="flex items-center justify-between mb-4">
                   <span className="inline-flex items-center space-x-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-brand-pistachio/10 text-brand-pistachio">
                     <span className="w-1.5 h-1.5 rounded-full bg-brand-pistachio animate-pulse" />
-                    <span>{store.status}</span>
+                    <span>{store.active ? 'Open Now' : 'Closed'}</span>
                   </span>
                   <MapPin className="w-4 h-4 text-brand-primary" />
                 </div>
@@ -43,7 +61,7 @@ export const StoreLocator: React.FC = () => {
                 <div className="space-y-3 text-xs text-brand-white/60 pt-4 border-t border-brand-white/5">
                   <div className="flex items-center space-x-2">
                     <Clock className="w-3.5 h-3.5 text-brand-primary" />
-                    <span>{store.hours}</span>
+                    <span>{Object.values(store.openingHours).join(' · ')}</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Phone className="w-3.5 h-3.5 text-brand-primary" />

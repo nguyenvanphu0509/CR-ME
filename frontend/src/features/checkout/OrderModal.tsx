@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, CheckCircle2, ShoppingBag, MapPin, Clock } from 'lucide-react';
-import { ProductFlavor, ToppingOption, STORE_LOCATIONS, FLAVOR_LIST } from '@/config/brand';
+import { ProductFlavor, ToppingOption, FLAVOR_LIST } from '@/config/brand';
+import { ApiStore, getStores } from '@/features/catalog/api/catalog';
+import { placeCustomOrder } from '@/features/checkout/api/orders';
 
 interface OrderModalProps {
   isOpen: boolean;
@@ -15,24 +17,52 @@ export const OrderModal: React.FC<OrderModalProps> = ({
   initialToppings,
   onClose,
 }) => {
-  const [selectedFlavor] = useState<ProductFlavor>(
-    initialFlavor || FLAVOR_LIST[0]
-  );
-  const [selectedStore, setSelectedStore] = useState(STORE_LOCATIONS[0].id);
+  const selectedFlavor = initialFlavor || FLAVOR_LIST[0];
+  const [stores, setStores] = useState<ApiStore[]>([]);
+  const [selectedStore, setSelectedStore] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [orderCode, setOrderCode] = useState('');
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    getStores().then((availableStores) => {
+      setStores(availableStores);
+      setSelectedStore((current) => current || availableStores[0]?.id || '');
+    }).catch(() => setError('Không tải được danh sách cửa hàng'));
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const code = 'CRM-' + Math.floor(100000 + Math.random() * 900000);
-    setOrderCode(code);
-    setIsSubmitted(true);
+    setError(null);
+    setIsSubmitting(true);
+    try {
+      const order = await placeCustomOrder(
+        {
+          baseFlavorId: selectedFlavor.id,
+          extraFlavorIds: [],
+          toppingIds: initialToppings?.map((topping) => topping.id) ?? [],
+          sizeId: 'regular',
+        },
+        quantity,
+        { storeId: selectedStore, customerName, customerPhone },
+      );
+      setOrderCode(order.orderCode);
+      setIsSubmitted(true);
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : 'Không thể tạo đơn hàng');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const currentStore = STORE_LOCATIONS.find((s) => s.id === selectedStore);
+  const currentStore = stores.find((s) => s.id === selectedStore);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand-black/85 backdrop-blur-xl animate-fade-in">
@@ -57,6 +87,25 @@ export const OrderModal: React.FC<OrderModalProps> = ({
             </h3>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <input
+                  required
+                  value={customerName}
+                  onChange={(event) => setCustomerName(event.target.value)}
+                  placeholder="Your name"
+                  className="rounded-xl bg-brand-white/5 border border-brand-white/10 px-4 py-3 text-sm text-brand-foreground outline-none focus:border-brand-primary"
+                />
+                <input
+                  required
+                  value={customerPhone}
+                  onChange={(event) => setCustomerPhone(event.target.value)}
+                  placeholder="Phone number"
+                  className="rounded-xl bg-brand-white/5 border border-brand-white/10 px-4 py-3 text-sm text-brand-foreground outline-none focus:border-brand-primary"
+                />
+              </div>
+
+              {error && <p className="text-sm text-brand-accent" role="alert">{error}</p>}
+
               {/* Flavor Summary */}
               <div className="bg-brand-white/5 p-4 rounded-2xl border border-brand-white/5 flex items-center justify-between">
                 <div>
@@ -94,7 +143,7 @@ export const OrderModal: React.FC<OrderModalProps> = ({
                   Select Boutique Parlor
                 </label>
                 <div className="space-y-2">
-                  {STORE_LOCATIONS.map((store) => (
+                  {stores.map((store) => (
                     <label
                       key={store.id}
                       className={`flex items-center justify-between p-3.5 rounded-xl border cursor-pointer transition-all ${
@@ -117,7 +166,9 @@ export const OrderModal: React.FC<OrderModalProps> = ({
                           <p className="text-[11px] text-brand-white/50">{store.address}</p>
                         </div>
                       </div>
-                      <span className="text-[10px] text-brand-pistachio font-medium">{store.status}</span>
+                      <span className="text-[10px] text-brand-pistachio font-medium">
+                        {store.active ? 'Open Now' : 'Closed'}
+                      </span>
                     </label>
                   ))}
                 </div>
@@ -136,7 +187,7 @@ export const OrderModal: React.FC<OrderModalProps> = ({
                   type="submit"
                   className="bg-brand-primary hover:bg-brand-primaryHover text-brand-background font-bold text-xs uppercase tracking-widest px-8 py-3.5 rounded-full transition-all transform hover:scale-105 shadow-lg shadow-brand-primary/20"
                 >
-                  Confirm Order
+                  {isSubmitting ? 'Sending...' : 'Confirm Order'}
                 </button>
               </div>
             </form>
