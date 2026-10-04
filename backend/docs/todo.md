@@ -145,14 +145,14 @@ READY
    ↓
 DELIVERED
 
-## some technique in backend 
+## some technique in backend
 Concurrency
 Transaction
 Race condition
 Database locking
 
 ## try to do paymant by QR code or bank
-- can do after 
+- can do after
 
 # 3. Có nên cho khách "tạo bất kỳ loại kem nào" không?
 
@@ -385,3 +385,9 @@ PostgreSQL
 - OrderController
 
 Đây chính là lúc bạn sẽ thấy OOP mà chúng ta vừa nói đến thực tế như thế nào.
+
+Controller: nhận và trả HTTP/JSON.
+Service: quy tắc nghiệp vụ, như tính giá hoặc giới hạn topping.
+Repository: truy vấn database.
+Entity: mô hình lưu trong database.
+DTO: dữ liệu API nhận/trả.
