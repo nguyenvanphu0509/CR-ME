@@ -4,6 +4,36 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+### Environment and local configuration ###
+.env
+.env.*
+!.env.example
+/src/main/resources/application-local.properties
+/src/main/resources/application-local.yml
+/src/main/resources/application-local.yaml
+
+### Private keys and keystores ###
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+### Local database backups ###
+/backups/
+*.dump
+*.backup
+
+### Generated files and operating system metadata ###
+*.class
+*.log
+*.hprof
+hs_err_pid*
+replay_pid*
+.DS_Store
+Thumbs.db
+
 ### STS ###
 .apt_generated
 .classpath

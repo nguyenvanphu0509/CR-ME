@@ -6,9 +6,29 @@
 .env.*
 !.env.example
 
+# Local Spring configuration (may contain database credentials)
+backend/src/main/resources/application-local.properties
+backend/src/main/resources/application-local.yml
+backend/src/main/resources/application-local.yaml
+
+# Private keys and keystores
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+# Local database backups (keep Flyway SQL migrations tracked)
+/backups/
+/backend/backups/
+*.dump
+*.backup
+
 # Java / Maven
 backend/target/
 *.class
+*.hprof
 
 # Node / Vite
 frontend/node_modules/
