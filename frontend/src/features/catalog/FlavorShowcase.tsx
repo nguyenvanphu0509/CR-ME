@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Sparkles, Info, ShoppingBag } from 'lucide-react';
-import { FLAVOR_LIST, ProductFlavor } from '@/config/brand';
-import { FlavorModal } from '@/components/FlavorModal';
+import React, { useEffect, useState } from 'react';
+import { Sparkles, Info, RefreshCw, ShoppingBag } from 'lucide-react';
+import { getFlavors, toProductFlavor } from '@/features/catalog/api/flavors';
+import { ProductFlavor } from '@/config/brand';
+import { FlavorModal } from '@/features/catalog/components/FlavorModal';
 
 interface FlavorShowcaseProps {
   onOrderFlavor: (flavor: ProductFlavor) => void;
@@ -9,13 +10,42 @@ interface FlavorShowcaseProps {
 
 export const FlavorShowcase: React.FC<FlavorShowcaseProps> = ({ onOrderFlavor }) => {
   const [selectedFlavor, setSelectedFlavor] = useState<ProductFlavor | null>(null);
+  const [flavors, setFlavors] = useState<ProductFlavor[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   const [activeCategory, setActiveCategory] = useState<string>('All');
 
   const categories = ['All', 'Signature', 'Seasonal', 'Dairy-Free'];
 
+  useEffect(() => {
+    let isCancelled = false;
+
+    getFlavors()
+      .then((apiFlavors) => {
+        if (!isCancelled) {
+          setFlavors(apiFlavors.filter((flavor) => flavor.available).map(toProductFlavor));
+        }
+      })
+      .catch((requestError: unknown) => {
+        if (!isCancelled) {
+          setError(requestError instanceof Error ? requestError.message : 'Không tải được danh sách kem');
+        }
+      })
+      .finally(() => {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [retryCount]);
+
   const filteredFlavors = activeCategory === 'All'
-    ? FLAVOR_LIST
-    : FLAVOR_LIST.filter(f => f.category === activeCategory);
+    ? flavors
+    : flavors.filter(f => f.category === activeCategory);
 
   return (
     <section id="flavors-section" className="relative py-28 bg-brand-secondary text-brand-foreground overflow-hidden">
@@ -53,9 +83,38 @@ export const FlavorShowcase: React.FC<FlavorShowcaseProps> = ({ onOrderFlavor })
           </div>
         </div>
 
-        {/* Flavors Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {filteredFlavors.map((flavor) => (
+        {isLoading && (
+          <div className="py-16 text-center text-sm text-brand-white/60" role="status">
+            Đang tải danh sách kem...
+          </div>
+        )}
+
+        {!isLoading && error && (
+          <div className="py-16 text-center" role="alert">
+            <p className="text-sm text-brand-white/70 mb-4">{error}</p>
+            <button
+              onClick={() => {
+                setError(null);
+                setIsLoading(true);
+                setRetryCount((count) => count + 1);
+              }}
+              className="inline-flex items-center space-x-2 bg-brand-primary text-brand-background px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wider"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Thử lại</span>
+            </button>
+          </div>
+        )}
+
+        {!isLoading && !error && filteredFlavors.length === 0 && (
+          <div className="py-16 text-center text-sm text-brand-white/60">
+            Chưa có flavor nào trong danh mục này.
+          </div>
+        )}
+
+        {!isLoading && !error && filteredFlavors.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {filteredFlavors.map((flavor) => (
             <div
               key={flavor.id}
               className="group relative bg-brand-surface rounded-3xl border border-brand-white/5 hover:border-brand-white/20 p-6 flex flex-col justify-between transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-brand-black/80"
@@ -106,8 +165,9 @@ export const FlavorShowcase: React.FC<FlavorShowcaseProps> = ({ onOrderFlavor })
                 </button>
               </div>
             </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Flavor Details Modal */}

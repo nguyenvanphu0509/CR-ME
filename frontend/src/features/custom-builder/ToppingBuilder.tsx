@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Sparkles, Check, Plus, RefreshCw, ShoppingBag } from 'lucide-react';
 import { TOPPINGS_LIST, ToppingOption, ProductFlavor, FLAVOR_LIST } from '@/config/brand';
+import { getToppings } from '@/features/catalog/api/catalog';
+import { getFlavors, toProductFlavor } from '@/features/catalog/api/flavors';
 
 interface ToppingBuilderProps {
   onOrderCustom: (flavor: ProductFlavor, toppings: ToppingOption[]) => void;
@@ -8,7 +10,27 @@ interface ToppingBuilderProps {
 
 export const ToppingBuilder: React.FC<ToppingBuilderProps> = ({ onOrderCustom }) => {
   const [selectedFlavor, setSelectedFlavor] = useState<ProductFlavor>(FLAVOR_LIST[0]);
+  const [flavors, setFlavors] = useState<ProductFlavor[]>(FLAVOR_LIST);
+  const [toppings, setToppings] = useState<ToppingOption[]>(TOPPINGS_LIST);
   const [selectedToppings, setSelectedToppings] = useState<string[]>(['waffle-bites', 'honeycomb']);
+
+  useEffect(() => {
+    Promise.all([getFlavors(), getToppings()]).then(([apiFlavors, apiToppings]) => {
+      const availableFlavors = apiFlavors.filter((flavor) => flavor.available).map(toProductFlavor);
+      if (availableFlavors.length > 0) {
+        setFlavors(availableFlavors);
+        setSelectedFlavor(availableFlavors[0]);
+      }
+      if (apiToppings.length > 0) {
+        setToppings(apiToppings);
+        setSelectedToppings(apiToppings.slice(0, 2).map((topping) => topping.id));
+      }
+    }).catch(() => {
+      // Keep the existing presentation fallback when the catalog is unavailable.
+    });
+  }, []);
+
+  const maxToppings = 3; // Set the maximum number of toppings
 
   const toggleTopping = (id: string) => {
     if (selectedToppings.includes(id)) {
@@ -16,13 +38,13 @@ export const ToppingBuilder: React.FC<ToppingBuilderProps> = ({ onOrderCustom })
         setSelectedToppings(selectedToppings.filter((t) => t !== id));
       }
     } else {
-      if (selectedToppings.length < 4) {
+      if (selectedToppings.length < maxToppings) {
         setSelectedToppings([...selectedToppings, id]);
       }
     }
   };
 
-  const currentToppingObjects = TOPPINGS_LIST.filter((t) => selectedToppings.includes(t.id));
+  const currentToppingObjects = toppings.filter((t) => selectedToppings.includes(t.id));
 
   return (
     <section id="topping-section" className="relative py-28 bg-brand-secondary text-brand-foreground overflow-hidden">
@@ -36,7 +58,7 @@ export const ToppingBuilder: React.FC<ToppingBuilderProps> = ({ onOrderCustom })
             Build Your Swirl
           </h2>
           <p className="text-sm md:text-base text-brand-white/70 font-light">
-            Pair our organic Tahitian vanilla or dark cocoa soft serve with up to 4 hand-picked artisanal toppings.
+            Pair our organic Tahitian vanilla or dark cocoa soft serve with up to 3 hand-picked artisanal toppings.
           </p>
         </div>
 
@@ -48,7 +70,7 @@ export const ToppingBuilder: React.FC<ToppingBuilderProps> = ({ onOrderCustom })
             </h3>
 
             <div className="space-y-3">
-              {FLAVOR_LIST.map((flavor) => {
+              {flavors.map((flavor) => {
                 const isSelected = selectedFlavor.id === flavor.id;
                 return (
                   <button
@@ -82,7 +104,7 @@ export const ToppingBuilder: React.FC<ToppingBuilderProps> = ({ onOrderCustom })
           <div className="lg:col-span-7 bg-brand-surface p-8 rounded-3xl border border-brand-white/10 space-y-6">
             <div className="flex items-center justify-between border-b border-brand-white/10 pb-4">
               <h3 className="text-lg font-display font-semibold text-brand-foreground">
-                2. Select Toppings ({selectedToppings.length}/4)
+                2. Select Toppings ({selectedToppings.length}/{maxToppings})
               </h3>
               <button
                 onClick={() => setSelectedToppings(['waffle-bites'])}
@@ -95,7 +117,7 @@ export const ToppingBuilder: React.FC<ToppingBuilderProps> = ({ onOrderCustom })
 
             {/* Toppings Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {TOPPINGS_LIST.map((topping) => {
+              {toppings.map((topping) => {
                 const isSelected = selectedToppings.includes(topping.id);
                 return (
                   <button
