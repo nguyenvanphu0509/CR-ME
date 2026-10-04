@@ -80,3 +80,20 @@ Từ thư mục `backend`:
 ./mvnw test             # chạy test
 ./mvnw clean test       # xóa kết quả build cũ rồi chạy test
 ```
+
+Jackson là thư viện Java giúp chuyển dữ liệu giữa JSON và object Java.
+vd : frontend gui: {"customerName": "Phú", "quantity": 2}
+Jackson giúp backend đọc thành object Java để xử lý. Chiều ngược lại, nó chuyển object Java thành JSON trả về frontend.
+ObjectMapper là công cụ của Jackson thực hiện việc chuyển đổi này.
+
+U = Untracked → file mới mà Git chưa theo dõi. Ví dụ bạn vừa tạo Cart.java thì nó hiện U. Khi git add file đó, nó sẽ được đưa vào Staged Changes.
+M = Modified → file đã được Git theo dõi, nhưng bạn vừa sửa nội dung so với commit trước.
+D = Deleted → file đã được Git theo dõi nhưng hiện tại bạn đã xóa nó.
+
+# how to run
+cd backend
+export DB_USERNAME=postgres
+read -s "DB_PASSWORD?Nhập mật khẩu PostgreSQL: "
+echo
+export DB_PASSWORD
+./mvnw spring-boot:run

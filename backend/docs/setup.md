@@ -1,9 +1,12 @@
-# create backend 
+# create backend
 spring initialize
-# how to run backend 
+# how to run backend
 ./mvnw spring-boot:run
-or 
+or
 mvn spring-boot:run
+
+- ./mvnw: dùng Maven Wrapper có sẵn trong project, tải và chạy phiên bản Maven mà project cấu hình.
+- mvn: dùng Maven cài trên máy, nên phải cài và cấu hình PATH trước.
 
 API dự kiến chạy tại:
 http://localhost:8080
@@ -60,7 +63,7 @@ export DB_PASSWORD
 ```
 để kết nối database. Rồi sau đó mới chạy backend
 
-## techinique backend 
+## techinique backend
 ***Database locking***
 - Database locking is a data synchronization mechanism provided by a database management system (DBMS) to prevent concurrent transactions from modifying or reading the same record simultaneously, which could lead to data inconsistency.
 - Preventing Race Conditions: Avoids scenarios where two or more threads simultaneously read stale data and overwrite each other's results (Lost Update).
@@ -114,10 +117,98 @@ Purpose (Identification & Prevention):
 A race condition is a risk that must be eliminated, not a feature.
 
 The goal of a backend engineer is to identify unsafe "Check-then-Act" or "Read-Modify-Write" patterns and implement appropriate solutions.
-## sumary 
+## sumary
 | **Concept** | **Role in the System** | **Interrelationship** |
 |---|---|---|
 | **Concurrency** | Execution environment foundation | Delivers performance gains, but is the direct cause of race conditions. |
 | **Race Condition** | Problem / emerging risk | Arises when concurrency exists without a mechanism to control access to shared resources. |
 | **Transaction** | Logical unit of work | Guarantees integrity (ACID) for a sequence of operations when multiple threads write data at once. |
-| **Database Locking** | Technical tool / solution | The key mechanism for controlling concurrency and eliminating race conditions within transactions. |
+| **Database Locking** | Technical tool / solution | The key mechanism for controlling
+concurrency and eliminating race conditions within transactions. |
+
+## how to push code into github with .pre-commit-config.yaml
+- don't push code into main
+- Set up pre-commit hooks on your machine if you haven't already:
+```bash
+pre-commit install
+pre-commit install --hook-type commit-msg
+```
+**chore**: Các thay đổi mang tính maintenance / công việc kỹ thuật, không trực tiếp thêm feature hay sửa bug.
+**refactor**: Refactor code nhưng không thay đổi behavior.
+**style**: Thay đổi format/style code, không thay đổi behavior.
+**docs**: Thay đổi documentation.
+
+## structure of backend
+- entity: mô tả dữ liệu lưu trong bảng database.
+- repository: đọc và ghi dữ liệu qua JPA.
+- service: xử lý nghiệp vụ.
+- controller: nhận request HTTP và trả response JSON.
+- dto: định dạng dữ liệu gửi qua API; không nhất thiết gửi toàn bộ entity ra ngoài.
+**(JPA/Hibernate giúp Java object ↔ database table, để bạn không phải tự viết quá nhiều SQL)**
+JPA là specification (bộ quy tắc/API), chứ không phải một implementation cụ thể.
+Nó định nghĩa cách Java object được mapping với database.
+Hibernate là một implementation của JPA.
+JPA đưa ra interface/quy tắc, Hibernate thực hiện những quy tắc đó.
+ex:
+HTTP Request
+     ↓
+Controller
+     ↓
+Service
+     ↓
+Repository
+     ↓
+JPA
+     ↓
+Hibernate
+     ↓
+SQL
+     ↓
+Database
+
+## ORM là ý tưởng cốt lõi
+Database sử dụng:
+Table
+Row
+Column
+Foreign Key
+
+Java sử dụng:
+Class
+Object
+Field
+Reference
+
+ORM giúp nối hai thế giới này:
+Java                         Database
+
+Class User       ←──────→    users table
+
+User object      ←──────→    Row
+
+field id         ←──────→    column id
+
+field name       ←──────→    column name
+
+Đây chính là lý do bạn thấy những annotation như:
+@Entity
+@Id
+@Column
+@Table
+@OneToMany
+@ManyToOne
+@OneToOne
+@ManyToMany
+
+Chúng mô tả relationship giữa Java object và database.
+Object-Relational Mapping. (ORM)
+| Khái niệm | Hiểu đơn giản |
+|---|---|
+| **JPA** | Specification/quy tắc cho ORM trong Java |
+| **Hibernate** | Implementation phổ biến của JPA |
+| **ORM** | Mapping Java objects ↔ Database tables |
+
+## migration and flyway
+Migration = ghi lại một bước thay đổi database từ trạng thái cũ → trạng thái mới.
+Flyway là một tool giúp tự động quản lý và chạy các migration đó.
+Migration là "lịch sử các bước thay đổi database". Flyway là công cụ đọc và chạy những bước thay đổi đó theo thứ tự.
